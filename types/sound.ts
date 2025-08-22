@@ -6,4 +6,5 @@ export type Sound = {
     duration?: number;
     color?: string;
     created_date?: string;
+    favorite?: boolean;
 };
