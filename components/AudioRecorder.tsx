@@ -1,6 +1,6 @@
-import { Audio } from "expo-av";
-import { useEffect, useRef, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
+import { useEffect, useRef, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type Props = {
     visible: boolean;
@@ -11,20 +11,41 @@ type Props = {
 export default function AudioRecorder({ visible, onSave, onCancel }: Props) {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [recordedUri, setRecordedUri] = useState<string | null>(null);
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
     const [isPlaying, setIsPlaying] = useState(false);
     const [recordingStart, setRecordingStart] = useState<number | null>(null);
     const soundRef = useRef<Audio.Sound | null>(null);
 
     useEffect(() => {
+        async function prepareAudio() {
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                playsInSilentModeIOS: true,
+                interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+                interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+                shouldDuckAndroid: true,
+                playThroughEarpieceAndroid: false,
+                staysActiveInBackground: false,
+            });
+        }
+        prepareAudio();
+
         return () => stopPlayback();
     }, []);
 
     async function start() {
-
         await Audio.requestPermissionsAsync();
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+            interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+            interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+            staysActiveInBackground: false,
+        });
+
         const rec = new Audio.Recording();
         await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
         await rec.startAsync();
@@ -41,22 +62,22 @@ export default function AudioRecorder({ visible, onSave, onCancel }: Props) {
         setRecordedUri(uri ?? null);
     }
 
-   async function play() {
-    if (!recordedUri) return;
-    stopPlayback();
+    async function play() {
+        if (!recordedUri) return;
+        stopPlayback();
 
-    const { sound } = await Audio.Sound.createAsync({ uri: recordedUri });
-    soundRef.current = sound;
+        const { sound } = await Audio.Sound.createAsync({ uri: recordedUri });
+        soundRef.current = sound;
 
-    await sound.setVolumeAsync(1.0); // max Volume
+        await sound.setVolumeAsync(1.0); // max Volume
 
-    sound.setOnPlaybackStatusUpdate((s: any) => {
-        if (s.didJustFinish) setIsPlaying(false);
-    });
+        sound.setOnPlaybackStatusUpdate((s: any) => {
+            if (s.didJustFinish) setIsPlaying(false);
+        });
 
-    setIsPlaying(true);
-    await sound.playAsync();
-}
+        setIsPlaying(true);
+        await sound.playAsync();
+    }
 
     function stopPlayback() {
         if (soundRef.current) {
@@ -100,7 +121,7 @@ export default function AudioRecorder({ visible, onSave, onCancel }: Props) {
                         )}
                         {recordedUri && (
                             <Pressable style={[styles.btn, styles.outline]} onPress={isPlaying ? stopPlayback : play}>
-                                <Text style={[styles.btnText, styles.outlineText]}>{isPlaying ? "Stopp" : "Abspielen"}</Text>
+                                <Text style={[styles.btnText, styles.outlineText]}>{isPlaying ? 'Stopp' : 'Abspielen'}</Text>
                             </Pressable>
                         )}
                     </View>
@@ -143,17 +164,16 @@ export default function AudioRecorder({ visible, onSave, onCancel }: Props) {
 }
 
 const styles = StyleSheet.create({
-    backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center", padding: 16 },
-    card: { width: "100%", maxWidth: 420, backgroundColor: "#fff", borderRadius: 16, padding: 16 },
-    h1: { fontSize: 20, fontWeight: "700", marginBottom: 12 },
-    row: { flexDirection: "row", gap: 8, marginVertical: 8 },
-    btn: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, flex: 1, alignItems: "center" },
-    primary: { backgroundColor: "#f97316" },
-    danger: { backgroundColor: "#ef4444" },
-    outline: { borderWidth: 1, borderColor: "#d1d5db", backgroundColor: "#fff" },
-    outlineText: { color: "#111827" },
-    disabled: { backgroundColor: "#e5e7eb" },
-    btnText: { color: "#fff", fontWeight: "600" },
-    input: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 12, marginTop: 8 },
+    backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 16 },
+    card: { width: '100%', maxWidth: 420, backgroundColor: '#fff', borderRadius: 16, padding: 16 },
+    h1: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
+    row: { flexDirection: 'row', gap: 8, marginVertical: 8 },
+    btn: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, flex: 1, alignItems: 'center' },
+    primary: { backgroundColor: '#f97316' },
+    danger: { backgroundColor: '#ef4444' },
+    outline: { borderWidth: 1, borderColor: '#d1d5db', backgroundColor: '#fff' },
+    outlineText: { color: '#111827' },
+    disabled: { backgroundColor: '#e5e7eb' },
+    btnText: { color: '#fff', fontWeight: '600' },
+    input: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12, marginTop: 8 },
 });
- 
