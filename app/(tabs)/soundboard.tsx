@@ -1,5 +1,4 @@
-import React from "react";
-import { View, Text, TextInput, FlatList, Pressable, StyleSheet } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Sound } from "../../types/sound";
 
 export default function Soundboard() {
