@@ -41,17 +41,22 @@ export default function AudioRecorder({ visible, onSave, onCancel }: Props) {
         setRecordedUri(uri ?? null);
     }
 
-    async function play() {
-        if (!recordedUri) return;
-        stopPlayback();
-        const { sound } = await Audio.Sound.createAsync({ uri: recordedUri });
-        soundRef.current = sound;
-        sound.setOnPlaybackStatusUpdate((s: any) => {
-            if (s.didJustFinish) setIsPlaying(false);
-        });
-        setIsPlaying(true);
-        await sound.playAsync();
-    }
+   async function play() {
+    if (!recordedUri) return;
+    stopPlayback();
+
+    const { sound } = await Audio.Sound.createAsync({ uri: recordedUri });
+    soundRef.current = sound;
+
+    await sound.setVolumeAsync(1.0); // max Volume
+
+    sound.setOnPlaybackStatusUpdate((s: any) => {
+        if (s.didJustFinish) setIsPlaying(false);
+    });
+
+    setIsPlaying(true);
+    await sound.playAsync();
+}
 
     function stopPlayback() {
         if (soundRef.current) {
