@@ -7,6 +7,7 @@ import {
     Pressable,
     StyleSheet,
     ActivityIndicator,
+    SafeAreaView,
 } from "react-native";
 import type { Sound as SoundType } from "../../types/sound";
 import { LocalSounds, saveRecordingLocally } from "@/storage/localSounds";
@@ -176,7 +177,7 @@ export default function Soundboard() {
 
     const favCount = sounds.filter((s) => s.favorite).length;
     return (
-        <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
             <View style={styles.header}>
                 <Text style={styles.title}>Mein Soundboard</Text>
                 <Text style={styles.subtitle}>
@@ -280,7 +281,7 @@ export default function Soundboard() {
                     onCancel={() => setEditing(null)}
                 />
             )}
-        </View>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
